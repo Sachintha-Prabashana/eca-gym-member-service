@@ -57,29 +57,6 @@ public class MemberController {
         );
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserProfile(@PathVariable Long userId) {
-
-        UserResponseDTO response = userService.getUserProfile(userId);
-        return new ResponseEntity<>(
-                ApiResponse.success("Profile retrieved successfully", response),
-                HttpStatus.OK
-        );
-    }
-
-    @PatchMapping(value = "/{userId}/details", consumes = {"multipart/form-data"})
-    public ResponseEntity<ApiResponse<UserResponseDTO>> updateUserDetails(
-            @PathVariable Long userId,
-            @Valid @ModelAttribute UserUpdateRequestDTO requestDTO,
-            @RequestPart(value = "file", required = false) MultipartFile file) {
-
-        UserResponseDTO response = userService.updateUserDetails(userId, requestDTO, file);
-        return new ResponseEntity<>(
-                ApiResponse.success("User details updated successfully", response),
-                HttpStatus.OK
-        );
-    }
-
     @PostMapping(value = "/{memberId}/profile-image", consumes = "multipart/form-data")
     public ResponseEntity<ApiResponse<Void>> uploadProfileImage(
             @PathVariable Long memberId,
@@ -91,15 +68,6 @@ public class MemberController {
                 HttpStatus.OK
         );
     }
-
-//    @PutMapping("/{memberId}/promote-to-trainer")
-//    public ResponseEntity<ApiResponse<UserResponseDTO>> promoteToTrainer(@PathVariable Long memberId) {
-//        UserResponseDTO responseDTO = memberService.promoteToTrainer(memberId);
-//        return new ResponseEntity<>(
-//                ApiResponse.success("Member successfully promoted to Trainer", responseDTO),
-//                HttpStatus.OK
-//        );
-//    }
 
     @PostMapping("/trainers")
     public ResponseEntity<ApiResponse<TrainerResponseDTO>> createTrainer(

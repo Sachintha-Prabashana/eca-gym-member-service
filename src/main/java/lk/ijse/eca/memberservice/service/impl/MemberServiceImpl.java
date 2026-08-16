@@ -11,7 +11,9 @@ import lk.ijse.eca.memberservice.entity.Member;
 import lk.ijse.eca.memberservice.entity.Role;
 import lk.ijse.eca.memberservice.entity.Trainer;
 import lk.ijse.eca.memberservice.entity.User;
+import lk.ijse.eca.memberservice.exception.AuthenticationFailedException;
 import lk.ijse.eca.memberservice.exception.DuplicateResourceException;
+import lk.ijse.eca.memberservice.exception.ResourceNotFoundException;
 import lk.ijse.eca.memberservice.mapper.MemberMapper;
 import lk.ijse.eca.memberservice.mapper.UserMapper;
 import lk.ijse.eca.memberservice.repository.MemberRepository;
@@ -27,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -76,7 +79,7 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public void uploadProfileImage(Long memberId, MultipartFile file) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
         
         if (file != null && !file.isEmpty()) {
             String imageUrl = fileStorageService.storeFile(file);
@@ -120,10 +123,10 @@ public class MemberServiceImpl implements MemberService {
     @Override
     public AuthResponseDTO login(LoginRequestDTO requestDTO) {
         User user = userRepository.findByEmail(requestDTO.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new AuthenticationFailedException("Invalid email or password"));
 
         if (!passwordEncoder.matches(requestDTO.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new AuthenticationFailedException("Invalid email or password");
         }
 
         String accessToken = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole().name());
@@ -136,10 +139,10 @@ public class MemberServiceImpl implements MemberService {
     public AuthResponseDTO refresh(String refreshToken) {
         String email = jwtUtil.extractEmail(refreshToken);
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (!jwtUtil.validateToken(refreshToken, email)) {
-            throw new RuntimeException("Invalid refresh token");
+            throw new AuthenticationFailedException("Invalid refresh token");
         }
 
         String newAccessToken = jwtUtil.generateToken(user.getId(), user.getEmail(), user.getRole().name());
@@ -169,14 +172,14 @@ public class MemberServiceImpl implements MemberService {
     @Transactional
     public MemberDetailsResponseDTO assignTrainer(Long memberId, Long trainerId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
 
         if (member.getTrainer() != null) {
-            throw new RuntimeException("Member already has a trainer assigned");
+            throw new DuplicateResourceException("Member already has a trainer assigned");
         }
 
         Trainer trainer = trainerRepository.findById(trainerId)
-                .orElseThrow(() -> new RuntimeException("Trainer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Trainer not found"));
 
         member.setTrainer(trainer);
         memberRepository.save(member);
@@ -188,19 +191,19 @@ public class MemberServiceImpl implements MemberService {
     @Transactional(readOnly = true)
     public MemberDetailsResponseDTO getAssignedTrainer(Long memberId) {
         Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new RuntimeException("Member not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
 
         return userMapper.toMemberDetailsResponseDTO(member);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public java.util.List<MemberDetailsResponseDTO> getMembersByTrainer(Long trainerId) {
+    public List<MemberDetailsResponseDTO> getMembersByTrainer(Long trainerId) {
         if (!trainerRepository.existsById(trainerId)) {
-            throw new RuntimeException("Trainer not found");
+            throw new ResourceNotFoundException("Trainer not found");
         }
         
-        java.util.List<Member> members = memberRepository.findByTrainerId(trainerId);
+        List<Member> members = memberRepository.findByTrainerId(trainerId);
         return members.stream()
                 .map(userMapper::toMemberDetailsResponseDTO)
                 .collect(java.util.stream.Collectors.toList());

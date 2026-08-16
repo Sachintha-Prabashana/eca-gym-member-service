@@ -1,11 +1,14 @@
 package lk.ijse.eca.memberservice.service;
 
-import jakarta.validation.Valid;
 import lk.ijse.eca.memberservice.dto.request.MemberRegisterRequestDTO;
 import lk.ijse.eca.memberservice.dto.request.TrainerCreateRequestDTO;
+import lk.ijse.eca.memberservice.dto.response.AuthResponseDTO;
+import lk.ijse.eca.memberservice.dto.response.MemberDetailsResponseDTO;
 import lk.ijse.eca.memberservice.dto.response.TrainerResponseDTO;
 import lk.ijse.eca.memberservice.dto.response.UserResponseDTO;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 public interface MemberService {
     UserResponseDTO registerMember(MemberRegisterRequestDTO requestDTO);
@@ -13,10 +16,10 @@ public interface MemberService {
 
     TrainerResponseDTO createTrainer(TrainerCreateRequestDTO requestDTO);
 
-    lk.ijse.eca.memberservice.dto.response.AuthResponseDTO login(lk.ijse.eca.memberservice.dto.request.LoginRequestDTO requestDTO);
-    lk.ijse.eca.memberservice.dto.response.AuthResponseDTO refresh(String refreshToken);
+    AuthResponseDTO login(lk.ijse.eca.memberservice.dto.request.LoginRequestDTO requestDTO);
+    AuthResponseDTO refresh(String refreshToken);
 
-    lk.ijse.eca.memberservice.dto.response.MemberDetailsResponseDTO assignTrainer(Long memberId, Long trainerId);
-    lk.ijse.eca.memberservice.dto.response.MemberDetailsResponseDTO getAssignedTrainer(Long memberId);
-    java.util.List<lk.ijse.eca.memberservice.dto.response.MemberDetailsResponseDTO> getMembersByTrainer(Long trainerId);
+    MemberDetailsResponseDTO assignTrainer(Long memberId, Long trainerId);
+    MemberDetailsResponseDTO getAssignedTrainer(Long memberId);
+    List<MemberDetailsResponseDTO> getMembersByTrainer(Long trainerId);
 }

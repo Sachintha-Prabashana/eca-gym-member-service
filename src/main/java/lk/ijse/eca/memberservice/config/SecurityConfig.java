@@ -1,6 +1,8 @@
 package lk.ijse.eca.memberservice.config;
 
-import lk.ijse.eca.memberservice.security.JwtAuthFilter;
+import lk.ijse.eca.memberservice.security.CustomAccessDeniedHandler;
+import lk.ijse.eca.memberservice.security.CustomAuthenticationEntryPoint;
+import lk.ijse.eca.memberservice.security.HeaderAuthFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +19,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private final JwtAuthFilter jwtAuthFilter;
+    private final HeaderAuthFilter headerAuthFilter;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -30,7 +34,11 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/v1/members/*/trainer/*").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+            .exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint(authenticationEntryPoint)
+                .accessDeniedHandler(accessDeniedHandler)
+            )
+            .addFilterBefore(headerAuthFilter, UsernamePasswordAuthenticationFilter.class);
             
         return http.build();
     }
