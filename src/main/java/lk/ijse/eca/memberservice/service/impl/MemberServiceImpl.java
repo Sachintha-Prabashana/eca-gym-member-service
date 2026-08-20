@@ -227,4 +227,20 @@ public class MemberServiceImpl implements MemberService {
                 .assignedTrainer(member.getTrainer() != null ? userMapper.toTrainerSummaryDTO(member.getTrainer()) : null)
                 .build();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MemberDetailsResponseDTO> getAllMembers() {
+        return memberRepository.findAll().stream()
+                .map(userMapper::toMemberDetailsResponseDTO)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<TrainerResponseDTO> getAllTrainers() {
+        return trainerRepository.findAll().stream()
+                .map(t -> userMapper.toTrainerResponseDTO(t.getUser(), t))
+                .collect(java.util.stream.Collectors.toList());
+    }
 }

@@ -4,16 +4,15 @@ import jakarta.validation.Valid;
 import lk.ijse.eca.memberservice.dto.request.LoginRequestDTO;
 import lk.ijse.eca.memberservice.dto.request.MemberRegisterRequestDTO;
 import lk.ijse.eca.memberservice.dto.request.TrainerCreateRequestDTO;
-import lk.ijse.eca.memberservice.dto.request.UserUpdateRequestDTO;
 import lk.ijse.eca.memberservice.dto.response.*;
 import lk.ijse.eca.memberservice.service.MemberService;
-import lk.ijse.eca.memberservice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.web.multipart.MultipartFile;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/members")
@@ -21,7 +20,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class MemberController {
 
     private final MemberService memberService;
-    private final UserService userService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<UserResponseDTO>> registerMember(@Valid @RequestBody MemberRegisterRequestDTO requestDTO) {
@@ -109,4 +107,19 @@ public class MemberController {
         );
     }
 
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<MemberDetailsResponseDTO>>> getAllMembers() {
+        return new ResponseEntity<>(
+                ApiResponse.success("All members retrieved successfully", memberService.getAllMembers()),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping("/trainers")
+    public ResponseEntity<ApiResponse<List<TrainerResponseDTO>>> getAllTrainers() {
+        return new ResponseEntity<>(
+                ApiResponse.success("All trainers retrieved successfully", memberService.getAllTrainers()),
+                HttpStatus.OK
+        );
+    }
 }

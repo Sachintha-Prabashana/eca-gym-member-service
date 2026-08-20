@@ -21,4 +21,6 @@ public interface MemberService {
     List<MemberDetailsResponseDTO> getMembersByTrainer(Long trainerId);
     
     FullProfileResponseDTO getFullProfile(Long userId);
+    List<MemberDetailsResponseDTO> getAllMembers();
+    List<TrainerResponseDTO> getAllTrainers();
 }
