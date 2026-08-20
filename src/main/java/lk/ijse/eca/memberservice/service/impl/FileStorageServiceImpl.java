@@ -48,7 +48,7 @@ public class FileStorageServiceImpl implements FileStorageService {
             Path targetLocation = this.fileStorageLocation.resolve(newFileName);
             Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
 
-            return newFileName; // In a real scenario, this could be the URL to access the file
+            return "/api/v1/members/uploads/" + newFileName; // In a real scenario, this could be the URL to access the file
         } catch (IOException ex) {
             throw new RuntimeException("Could not store file " + originalFileName + ". Please try again!", ex);
         }

@@ -5,10 +5,7 @@ import lk.ijse.eca.memberservice.dto.request.LoginRequestDTO;
 import lk.ijse.eca.memberservice.dto.request.MemberRegisterRequestDTO;
 import lk.ijse.eca.memberservice.dto.request.TrainerCreateRequestDTO;
 import lk.ijse.eca.memberservice.dto.request.UserUpdateRequestDTO;
-import lk.ijse.eca.memberservice.dto.response.AuthResponseDTO;
-import lk.ijse.eca.memberservice.dto.response.MemberDetailsResponseDTO;
-import lk.ijse.eca.memberservice.dto.response.TrainerResponseDTO;
-import lk.ijse.eca.memberservice.dto.response.UserResponseDTO;
+import lk.ijse.eca.memberservice.dto.response.*;
 import lk.ijse.eca.memberservice.service.MemberService;
 import lk.ijse.eca.memberservice.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import lk.ijse.eca.memberservice.dto.response.ApiResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -71,7 +67,7 @@ public class MemberController {
 
     @PostMapping("/trainers")
     public ResponseEntity<ApiResponse<TrainerResponseDTO>> createTrainer(
-            @Valid @ModelAttribute TrainerCreateRequestDTO requestDTO
+            @Valid @RequestBody TrainerCreateRequestDTO requestDTO
     ) {
         TrainerResponseDTO responseDTO = memberService.createTrainer(requestDTO);
 
@@ -99,6 +95,16 @@ public class MemberController {
 
         return new ResponseEntity<>(
                 ApiResponse.success("Assigned trainer retrieved successfully", responseDTO),
+                HttpStatus.OK
+        );
+    }
+
+    @GetMapping("/{memberId}/full-profile")
+    public ResponseEntity<ApiResponse<FullProfileResponseDTO>> getFullProfile(@PathVariable Long memberId) {
+        FullProfileResponseDTO responseDTO = memberService.getFullProfile(memberId);
+
+        return new ResponseEntity<>(
+                ApiResponse.success("Full profile retrieved successfully", responseDTO),
                 HttpStatus.OK
         );
     }

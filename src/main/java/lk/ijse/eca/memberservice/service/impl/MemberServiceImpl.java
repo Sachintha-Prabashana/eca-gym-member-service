@@ -1,12 +1,9 @@
 package lk.ijse.eca.memberservice.service.impl;
 
 import lk.ijse.eca.memberservice.dto.request.LoginRequestDTO;
-import lk.ijse.eca.memberservice.dto.response.MemberDetailsResponseDTO;
+import lk.ijse.eca.memberservice.dto.response.*;
 import lk.ijse.eca.memberservice.dto.request.MemberRegisterRequestDTO;
 import lk.ijse.eca.memberservice.dto.request.TrainerCreateRequestDTO;
-import lk.ijse.eca.memberservice.dto.response.AuthResponseDTO;
-import lk.ijse.eca.memberservice.dto.response.TrainerResponseDTO;
-import lk.ijse.eca.memberservice.dto.response.UserResponseDTO;
 import lk.ijse.eca.memberservice.entity.Member;
 import lk.ijse.eca.memberservice.entity.Role;
 import lk.ijse.eca.memberservice.entity.Trainer;
@@ -178,7 +175,7 @@ public class MemberServiceImpl implements MemberService {
             throw new DuplicateResourceException("Member already has a trainer assigned");
         }
 
-        Trainer trainer = trainerRepository.findById(trainerId)
+        Trainer trainer = trainerRepository.findByUserId(trainerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trainer not found"));
 
         member.setTrainer(trainer);
@@ -199,13 +196,35 @@ public class MemberServiceImpl implements MemberService {
     @Override
     @Transactional(readOnly = true)
     public List<MemberDetailsResponseDTO> getMembersByTrainer(Long trainerId) {
-        if (!trainerRepository.existsById(trainerId)) {
-            throw new ResourceNotFoundException("Trainer not found");
-        }
+        Trainer trainer = trainerRepository.findByUserId(trainerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Trainer not found"));
         
-        List<Member> members = memberRepository.findByTrainerId(trainerId);
+        List<Member> members = memberRepository.findByTrainerId(trainer.getId());
         return members.stream()
-                .map(userMapper::toMemberDetailsResponseDTO)
+                .map(member -> userMapper.toMemberDetailsResponseDTO(member))
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public FullProfileResponseDTO getFullProfile(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        
+        Member member = memberRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Member profile not found for user"));
+                
+        return lk.ijse.eca.memberservice.dto.response.FullProfileResponseDTO.builder()
+                .id(member.getId())
+                .userId(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .profileImageUrl(user.getProfileImageUrl())
+                .phone(member.getPhone())
+                .dateOfBirth(member.getDateOfBirth())
+                .gender(member.getGender())
+                .assignedTrainer(member.getTrainer() != null ? userMapper.toTrainerSummaryDTO(member.getTrainer()) : null)
+                .build();
     }
 }

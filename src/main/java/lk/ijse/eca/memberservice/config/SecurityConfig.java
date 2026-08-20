@@ -30,6 +30,8 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/api/v1/members/login", "/api/v1/members/refresh", "/api/v1/members").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/members/uploads/**").permitAll()
+                .requestMatchers("/error").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/members/trainers").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/v1/members/*/trainer/*").hasRole("ADMIN")
                 .anyRequest().authenticated()
