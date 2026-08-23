@@ -171,10 +171,6 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new ResourceNotFoundException("Member not found"));
 
-        if (member.getTrainer() != null) {
-            throw new DuplicateResourceException("Member already has a trainer assigned");
-        }
-
         Trainer trainer = trainerRepository.findByUserId(trainerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Trainer not found"));
 

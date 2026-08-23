@@ -8,6 +8,7 @@ import lk.ijse.eca.memberservice.entity.Member;
 import lk.ijse.eca.memberservice.entity.Role;
 import lk.ijse.eca.memberservice.entity.Trainer;
 import lk.ijse.eca.memberservice.entity.User;
+import lk.ijse.eca.memberservice.exception.ResourceNotFoundException;
 import lk.ijse.eca.memberservice.mapper.UserMapper;
 import lk.ijse.eca.memberservice.repository.MemberRepository;
 import lk.ijse.eca.memberservice.repository.TrainerRepository;
@@ -35,7 +36,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public UserResponseDTO getUserProfile(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
 
         return switch (user.getRole()) {
             case ADMIN -> mapToAdminResponse(user);
@@ -48,24 +49,34 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponseDTO updateUserDetails(Long userId, UserUpdateRequestDTO requestDTO, MultipartFile file) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+
+        boolean updated = false;
 
         if (requestDTO != null) {
-            if (requestDTO.getFirstName() != null) user.setFirstName(requestDTO.getFirstName());
-            if (requestDTO.getLastName() != null) user.setLastName(requestDTO.getLastName());
+            if (requestDTO.getFirstName() != null) {
+                user.setFirstName(requestDTO.getFirstName());
+                updated = true;
+            }
+            if (requestDTO.getLastName() != null) {
+                user.setLastName(requestDTO.getLastName());
+                updated = true;
+            }
 
             switch (user.getRole()) {
                 case MEMBER -> updateMemberSpecificDetails(user, requestDTO);
                 case TRAINER -> updateTrainerSpecificDetails(user, requestDTO);
                 case ADMIN -> {} // Nothing extra to update for admin currently
             }
-            user.setUpdatedAt(LocalDateTime.now());
-            userRepository.save(user);
         }
 
         if (file != null && !file.isEmpty()) {
             String imageUrl = fileStorageService.storeFile(file);
             user.setProfileImageUrl(imageUrl);
+            updated = true;
+        }
+
+        if (updated) {
             user.setUpdatedAt(LocalDateTime.now());
             userRepository.save(user);
         }
